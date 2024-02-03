@@ -20,7 +20,8 @@ export default function () {
     const handleChange = async () => {
         setIsLoading(true);
 
-        let uri = `https://sgtd.onrender.com/get-events/${date.getFullYear()}-${(date.getMonth() + 1) < 10 ? `0${ date.getMonth() + 1 }` : date.getMonth() + 1}-${date.getDate()}/1`;
+        let uri = `${process.env.REACT_APP_SERVER}/get-event-date/${date.getFullYear()}-${(date.getMonth() + 1) < 10 ? `0${ date.getMonth() + 1 }` : date.getMonth() + 1}-${(date.getDate()) < 10 ? `0${ date.getDate() }` : date.getDate()}`;
+
         await axios({
             method: 'get',
             url: uri,
@@ -46,9 +47,10 @@ export default function () {
         setIsLoading(true);
 
         var result = null;
-        const temp_date = `${date.getFullYear()}-${(date.getMonth() + 1) >= 10 ? `${date.getMonth() + 1}` : `0${date.getMonth() + 1}`}-${date.getDate()}`;
-        const uri = `https://sgtd.onrender.com/delete-event/${temp_date}/${summ}`;
+        const temp_date = `${date.getFullYear()}-${(date.getMonth() + 1) >= 10 ? `${date.getMonth() + 1}` : `0${date.getMonth() + 1}`}-${(date.getDate()) < 10 ? `0${ date.getDate() }` : date.getDate()}`;
+        const uri = `${process.env.REACT_APP_SERVER}/delete-event/${temp_date}/${summ}`;
         const token = localStorage.getItem('accessToken');
+
         await axios({
             method: 'delete',
             url: uri,
@@ -61,7 +63,7 @@ export default function () {
             result = res.data;
         });
 
-        if (result['status']) {
+        if (result) {
             alert(`Booking deleted successfully!`);
         } else {
             alert(`Booking deleting failed!`);

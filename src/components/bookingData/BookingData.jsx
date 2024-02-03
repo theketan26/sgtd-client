@@ -14,9 +14,9 @@ export default function (props) {
 
     async function handleChange() {
         try {
-            if (props.data['message'].length > 0) {
+            if (props.data['status']) {
                 await setIsBook(true);
-                await setData(props.data['message']);
+                await setData(props.data['data']);
             }
             else {
                 await setIsBook(false);
@@ -62,15 +62,12 @@ export default function (props) {
                                         <div key = { index } className = "mt-5">
                                             <div className = "text-center font-medium">
                                                 <div className = "">
-                                                    { item.summary.toUpperCase() }
+                                                    { item.title.toUpperCase() }
                                                 </div>
                                                 <div>
-                                                    <div>Host: { item.description.host_name }</div>
-                                                    { isLoggedIn ? <div>Number: { item.description.host_number }</div> : <div></div> }
-                                                    { isLoggedIn ? <div>Email: { item.description.host_email }</div> : <div></div> }
-                                                    { isLoggedIn ? <div>Address: { item.description.host_address }</div> : <div></div> }
-                                                    <div>Booker: { item.description.booker_name }</div>
-                                                    <div>Booker Number: { item.description.booker_number }</div>
+                                                    <div>Host: { item.host }</div>
+                                                    <div>Booker: { item.booker_name }</div>
+                                                    <div>Booker Number: { item.booker_number }</div>
                                                 </div>
                                             </div>
                                             {
@@ -78,7 +75,7 @@ export default function (props) {
                                                     (areConfirm) ?
                                                         <div>
                                                             <button className = "mt-4 rounded-md border-stone-800 border-4 px-2 py-1"
-                                                                onClick = {(e) => props.handleDelete(e, item.summary)}>
+                                                                onClick = {(e) => props.handleDelete(e, item.event_id)}>
                                                                 Yes
                                                             </button>
                                                             <button className = "ml-2 mt-4 rounded-md border-stone-800 border-4 px-2 py-1"

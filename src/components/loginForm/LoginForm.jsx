@@ -42,8 +42,9 @@ export default function() {
             return;
         }
 
-        let uri = `https://sgtd.onrender.com/login`;
-        // let uri = `http://127.0.0.1:8000/login`;
+        let uri = `${process.env.REACT_APP_SERVER}/login`;
+        console.log(uri);
+
         let formData = new FormData();
         formData.append('username', number);
         formData.append('password', password);
