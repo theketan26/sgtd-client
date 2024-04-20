@@ -9,10 +9,11 @@ import DateDay from "../calender/DateDay";
 import BookingData from '../bookingData/BookingData';
 
 
-export default function () {
+function Main () {
     const [date, setDate] = useState(new Date());
     const [bookingData, setBookingData] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const isLoggedIn = useSelector((state) => state?.isLoggedIn);
     const position = useSelector((state) => state.position);
     const navigate = useNavigate();
 
@@ -20,7 +21,7 @@ export default function () {
     const handleChange = async () => {
         setIsLoading(true);
 
-        let uri = `${process.env.REACT_APP_SERVER}/get-event-date/${date.getFullYear()}-${(date.getMonth() + 1) < 10 ? `0${ date.getMonth() + 1 }` : date.getMonth() + 1}-${(date.getDate()) < 10 ? `0${ date.getDate() }` : date.getDate()}`;
+        let uri = `${process.env.REACT_APP_SERVER}/api/event/${date.getFullYear()}/${(date.getMonth() + 1) < 10 ? `0${ date.getMonth() + 1 }` : date.getMonth() + 1}/${(date.getDate()) < 10 ? `0${ date.getDate() }` : date.getDate()}`;
 
         await axios({
             method: 'get',
@@ -42,13 +43,12 @@ export default function () {
     };
 
 
-    const handleDelete = async (e, summ) => {
+    const handleDelete = async (e, event_id) => {
         e.preventDefault();
         setIsLoading(true);
 
         var result = null;
-        const temp_date = `${date.getFullYear()}-${(date.getMonth() + 1) >= 10 ? `${date.getMonth() + 1}` : `0${date.getMonth() + 1}`}-${(date.getDate()) < 10 ? `0${ date.getDate() }` : date.getDate()}`;
-        const uri = `${process.env.REACT_APP_SERVER}/delete-event/${temp_date}/${summ}`;
+        const uri = `${process.env.REACT_APP_SERVER}/api/event/${event_id}`;
         const token = localStorage.getItem('accessToken');
 
         await axios({
@@ -81,7 +81,7 @@ export default function () {
     return (
         <div className = 'pt-20 mx-5 my-10 flex flex-col justify-center align-center'>
             {
-                (position === 1) &&
+                (isLoggedIn && position === 0) &&
                         <button className = "mb-4 w-32 rounded-md border-stone-800 border-4 px-2 py-1 self-center"
                             onClick = { (e) => handleBook(e) }
                             >Book a Date
@@ -97,3 +97,5 @@ export default function () {
         </div>
     )
 }
+
+export default Main;

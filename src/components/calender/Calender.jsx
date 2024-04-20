@@ -3,7 +3,7 @@ import 'react-calendar/dist/Calendar.css';
 import { useState } from 'react';
 
 
-export default function(props) {
+function Calendar_(props) {
     const [selectedDates, setSelectedDates] = useState([new Date('2024-01-10'), new Date('2024-01-15')]);
 
     
@@ -21,8 +21,11 @@ export default function(props) {
                 tileContent = { tileContent }
                 className = 'font-bold' 
                 onChange = { props.changeDate } 
-                value = { props.date } 
+                // value = { props.date } 
             />
         </div>
     )
 }
+
+
+export default Calendar_;

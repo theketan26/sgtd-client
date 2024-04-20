@@ -4,41 +4,60 @@ import { useNavigate } from "react-router-dom";
 import { BounceLoader } from "react-spinners";
 
 
-export default function() {
-    const summaries = ['wedding', 'birthday', 'surajpuja', 'uthawna', 'pagdi', 'samajik', 'political', 'other'];
+const emptyEvent = {
+    "title": "marrige",
+    "days": 1,
+    "dates": [""],
+    "note": "",
+    "booker": {
+        "name": "",
+        "email": "",
+        "mobile": 0,
+        "alt_mobile": 0,
+        "address": ""
+    }, 
+    "referer": {
+        "name": "",
+        "email": "",
+        "mobile": 0,
+        "alt_mobile": 0,
+        "address": ""
+    }, 
+    "host": {
+        "name": "",
+        "email": "",
+        "mobile": 0,
+        "alt_mobile": 0,
+        "address": ""
+    }, 
+    "payment": {
+        "total": 0,
+        "paid": 0,
+        "mode": "cash",
+        "date": ""
+    }
+}
+
+
+export default function Bookform () {
+    const summaries = ['marrige', 'birthday', 'surajpuja', 'uthawna', 'pagdi', 'samajik', 'political', 'other'];
     const [note, setNote] = useState('');
-    const [data, setData] = useState({
-        "date": "",
-        "days": "1",
-        "desc": {
-            "title": "wedding",
-            "host": {
-                "name": "",
-                "number": "0",
-                "alt_number": "0",
-                "address": ""
-            },
-            "booker": {
-                "name": "",
-                "number": "0"
-            },
-            "referer": {
-                "name": "",
-                "number": "0"
-            }
-        },
-        "payment": {
-            "deposit": "0",
-            "mode": "cash",
-            "date": "",
-        },
-        "extra": ""
-    });
+    const [data, setData] = useState(emptyEvent);
     const [isLoading, setIsLoading] = useState(false);
+
+    
+    const toDate = (date) => {
+        date = new Date(date);
+        let day = date.getDate();
+        let month = date.getMonth();
+        let year = date.getFullYear();
+        return year.toString() + "-" + (month + 1 < 10 ? "0" : "") + (month + 1).toString() + "-" + (day < 10 ? "0" : "") + day.toString()
+    }
 
 
     const checkDate = () => {
-        let temp_date = new Date(data.date);
+        let temp_date = new Date(data.dates[0]);
+        console.log(temp_date);
         if (temp_date > new Date()) {
             return true;
         } else {
@@ -59,7 +78,7 @@ export default function() {
 
 
     const checkHostName = () => {
-        if (data.desc.host.name.length >= 3) {
+        if (data.host.name.length >= 3) {
             return true;
         } else {
             setNote('Invalid host name!');
@@ -69,7 +88,7 @@ export default function() {
 
 
     const checkHostNumber = () => {
-        let num = Number(data.desc.host.number);
+        let num = Number(data.host.mobile);
         if (num > 6000000000 && num < 9999999999) {
             return true;
         } else {
@@ -80,7 +99,7 @@ export default function() {
 
 
     const checkPaymentDeposit = () => {
-        if (data.payment.deposit >= 0) {
+        if (data.payment.paid >= 0) {
             return true;
         } else {
             setNote('Invalid payment deposit!');
@@ -93,9 +112,9 @@ export default function() {
         setIsLoading(true);
 
         e.preventDefault();
-        if (!(checkDate() && 
-                checkHostName() && 
+        if (!(checkHostName() && 
                 checkHostNumber() && 
+                checkDate() &&
                 checkDay() && 
                 checkPaymentDeposit()
                 )) {
@@ -106,19 +125,20 @@ export default function() {
         setNote('');
 
         var result = null;
-        const uri = `${process.env.REACT_APP_SERVER}/add-event/`;
-        const token = localStorage.getItem('accessToken');
+        const uri = `${process.env.REACT_APP_SERVER}/api/event/`;
         const userData = JSON.parse(localStorage.getItem('userData'));
-        var reqData = data;
+        var reqData = {...data};
 
         reqData.days = Number(reqData.days)
-        reqData.payment.deposit = Number(reqData.payment.deposit)
-        reqData.desc.host.number = Number(reqData.desc.host.number)
-        reqData.desc.host.alt_number = Number(reqData.desc.host.alt_number)
-        reqData.desc.booker.number = Number(reqData.desc.booker.number)
-        reqData.desc.referer.number = Number(reqData.desc.referer.number)
-
-        reqData = JSON.stringify(reqData);
+        reqData.dates = reqData.dates
+        reqData.payment.paid = Number(reqData.payment.paid)
+        reqData.host.mobile = Number(reqData.host.mobile)
+        reqData.host.alt_mobile = Number(reqData.host.alt_mobile)
+        reqData.booker.name = userData.name;
+        reqData.booker.mobile = userData.mobile;
+        reqData.booker.alt_mobile = userData.mobile;
+        reqData.referer.mobile = Number(reqData.referer.mobile)
+        reqData.referer.alt_mobile = Number(reqData.referer.alt_mobile)
 
         await axios({
             method: 'post',
@@ -126,7 +146,6 @@ export default function() {
             headers: {
                 'accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
             },
             data: reqData
         }).then(async (res) => {
@@ -134,9 +153,10 @@ export default function() {
         });
 
         if (result) {
-            alert(`${data.desc.title.toLocaleUpperCase()} booking added successfully!`);
+            alert(`${data.title.toLocaleUpperCase()} booking added successfully!`);
+            reqData = emptyEvent;
         } else {
-            alert(`${data.desc.title.toLocaleUpperCase()} booking failed!`);
+            alert(`${data.title.toLocaleUpperCase()} booking failed!`);
         }
 
         setIsLoading(false);
@@ -155,7 +175,7 @@ export default function() {
                     <input type = "date" name = "date"
                         value = { data['date'] } onChange = { (e) => setData({
                             ...data,
-                            'date': e.target.value
+                            'dates': [toDate(e.target.value)]
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
                     />
@@ -167,12 +187,9 @@ export default function() {
                     <select className = "px-4 py-2"
                         onChange = { (e) => setData({
                             ...data,
-                            'desc': {
-                                ...data['desc'],
-                                'title': e.target.value
-                            }
+                            'title': e.target.value
                         }) }
-                        value = { data['desc']['title'] }
+                        value = { data['title'] }
                     >
                         {
                             summaries.map((sum) => {
@@ -216,14 +233,11 @@ export default function() {
                 <div className = "mt-2 flex justify-between">
                     <label htmlFor = 'host_name'>Host Name</label>
                     <input type = "text" name = "host_name" placeholder = "Enter name of host..." 
-                        value = { data.desc.host.name } onChange = { (e) => setData({
+                        value = { data.host.name } onChange = { (e) => setData({
                             ...data,
-                            'desc': {
-                                ...data.desc,
-                                'host': {
-                                    ...data.desc.host,
-                                    'name': e.target.value
-                                }
+                            'host': {
+                                ...data.host,
+                                name: e.target.value
                             }
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
@@ -234,15 +248,12 @@ export default function() {
                 <div className = "mt-2 flex justify-between">
                     <label htmlFor = 'host_number'>Host Number</label>
                     <input type = "number" name = "host_number" placeholder = "Enter number of host..." 
-                        value = { data.desc.host.number } onChange = { (e) => setData({
+                        value = { data.host.number } onChange = { (e) => setData({
                             ...data,
-                            'desc': {
-                                ...data.desc,
-                                'host': {
-                                    ...data.desc.host,
-                                    'number': e.target.value
+                            'host': {
+                                ...data.host,
+                                'mobile': e.target.value
                                 }
-                            }
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
                     />
@@ -252,15 +263,12 @@ export default function() {
                 <div className = "mt-2 flex justify-between">   
                     <label htmlFor = 'host_alt_number'>Host Number 2</label>
                     <input type = "number" name = "host_alt_number" placeholder = "Enter alternate number..." 
-                        value = { data.desc.host.alt_number } onChange = { (e) => setData({
+                        value = { data.host.alt_number } onChange = { (e) => setData({
                             ...data,
-                            "desc": {
-                                ...data.desc,
-                                "host": {
-                                    ...data.desc.host,
-                                    "alt_number": e.target.value
+                            "host": {
+                                ...data.host,
+                                "alt_mobile": e.target.value
                                 }
-                            }
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
                     />
@@ -270,14 +278,11 @@ export default function() {
                 <div className = "mt-2 flex justify-between">
                     <label htmlFor = 'host_address'>Host Address</label>
                     <input type = "text" name = "host_address" placeholder = "Enter address of host..." 
-                        value = { data.desc.host.address } onChange = { (e) => setData({
+                        value = { data.host.address } onChange = { (e) => setData({
                             ...data,
-                            'desc': {
-                                ...data.desc,
-                                'host': {
-                                    ...data.desc.host,
-                                    'address': e.target.value
-                                }
+                            'host': {
+                                ...data.host,
+                                'address': e.target.value
                             }
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
@@ -288,15 +293,12 @@ export default function() {
                 <div className = "mt-2 flex justify-between">
                     <label htmlFor = 'referer_name'>Referer Name</label>
                     <input type = "text" name = "referer_name" placeholder = "Enter name of referer..." 
-                        value = { data.desc.referer.name } onChange = { (e) => setData({
+                        value = { data.referer.name } onChange = { (e) => setData({
                             ...data,
-                            'desc': {
-                                ...data.desc,
-                                'referer': {
-                                    ...data.desc.referer,
-                                    'name': e.target.value
+                            'referer': {
+                                ...data.referer,
+                                'name': e.target.value
                                 }
-                            }
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
                     />
@@ -306,14 +308,11 @@ export default function() {
                 <div className = "mt-2 flex justify-between">
                     <label htmlFor = 'referer_number'>Referer Number</label>
                     <input type = "number" name = "referer_number" placeholder = "Enter number of referer..." 
-                        value = { data.desc.referer.number } onChange = { (e) => setData({
+                        value = { data.referer.mobile } onChange = { (e) => setData({
                             ...data,
-                            'desc': {
-                                ...data.desc,
-                                'referer': {
-                                    ...data.desc.referer,
-                                    'number': e.target.value
-                                }
+                            'referer': {
+                                ...data.referer,
+                                'mobile': e.target.value
                             }
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
@@ -324,11 +323,11 @@ export default function() {
                 <div className = "mt-2 flex justify-between">
                     <label htmlFor = 'payment_deposit'>Payment Deposit</label>
                     <input type = "number" name = "payment_deposit" placeholder = "Enter desposit amount..." 
-                        value = { data.payment.deposit } onChange = { (e) => setData({
+                        value = { data.payment.paid } onChange = { (e) => setData({
                             ...data,
                             'payment': {
                                 ...data.payment,
-                                'deposit': e.target.value
+                                'paid': e.target.value
                             }
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
@@ -374,9 +373,9 @@ export default function() {
                 <div className = "mt-2 flex justify-between">
                     <label htmlFor = 'extra'>Extra Details</label>
                     <input type = "text" name = "extra"
-                        value = { data.extra } onChange = { (e) => setData({
+                        value = { data.note } onChange = { (e) => setData({
                             ...data,
-                            'extra': e.target.value
+                            'note': e.target.value
                         }) }
                         className = "ms-5 border-2 border-stone-600 px-2 py-1 rounded-md" 
                     />

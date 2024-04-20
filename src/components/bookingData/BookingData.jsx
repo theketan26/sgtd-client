@@ -1,3 +1,4 @@
+/* eslint-disable import/no-anonymous-default-export */
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,11 @@ export default function (props) {
     async function handleChange() {
         try {
             if (props.data['status']) {
-                await setIsBook(true);
+                if (props.data['data'].length > 0) {
+                    await setIsBook(true);
+                } else {
+                    await setIsBook(false);
+                }
                 await setData(props.data['data']);
             }
             else {
@@ -23,6 +28,7 @@ export default function (props) {
                 await setData([]);
             }
         } catch (e) {
+            alert("Error: " + e.message);
         }
     };
 
@@ -65,17 +71,19 @@ export default function (props) {
                                                     { item.title.toUpperCase() }
                                                 </div>
                                                 <div>
-                                                    <div>Host: { item.host }</div>
-                                                    <div>Booker: { item.booker_name }</div>
-                                                    <div>Booker Number: { item.booker_number }</div>
+                                                    <div>Host: { item.host.name }</div>
+                                                    <div>Booker: { item.booker.name }</div>
+                                                    <div>Booker Number: { item.booker.mobile }</div>
                                                 </div>
                                             </div>
                                             {
-                                                (position === 1) && (
+                                                (isLoggedIn && position === 0) && (
                                                     (areConfirm) ?
                                                         <div>
                                                             <button className = "mt-4 rounded-md border-stone-800 border-4 px-2 py-1"
-                                                                onClick = {(e) => props.handleDelete(e, item.event_id)}>
+                                                                onClick = {(e) => {
+                                                                    props.handleDelete(e, item._id);
+                                                                }}>
                                                                 Yes
                                                             </button>
                                                             <button className = "ml-2 mt-4 rounded-md border-stone-800 border-4 px-2 py-1"

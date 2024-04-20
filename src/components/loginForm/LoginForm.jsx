@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BounceLoader } from "react-spinners";
 
 
-export default function() {
+export default function Login () {
     const [note, setNote] = useState('');
     const [number, setNumber] = useState('');
     const [password, setPassword] = useState('');
@@ -42,12 +42,7 @@ export default function() {
             return;
         }
 
-        let uri = `${process.env.REACT_APP_SERVER}/login`;
-        console.log(uri);
-
-        let formData = new FormData();
-        formData.append('username', number);
-        formData.append('password', password);
+        let uri = `${process.env.REACT_APP_SERVER}/api/auth/login`;
 
         let data;
         await axios({
@@ -55,7 +50,10 @@ export default function() {
             url: uri,
             'accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
-            data: formData
+            data: {
+                "mobile": number,
+                "password": password
+            }
         }).then(async (res) => {
             data = res.data;
         });
